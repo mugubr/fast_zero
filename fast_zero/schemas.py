@@ -5,10 +5,6 @@ class Message(BaseModel):
     message: str
 
 
-class HTTPExceptionSchema(BaseModel):
-    detail: str
-
-
 class UserSchema(BaseModel):
     username: str
     email: EmailStr
