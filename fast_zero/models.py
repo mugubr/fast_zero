@@ -21,5 +21,5 @@ class User:
         init=False,
         default=func.now(),
         server_default=func.now(),
-        onupdate=func.now()
+        onupdate=func.now(),
     )
