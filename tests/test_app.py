@@ -63,9 +63,10 @@ def test_read_user_should_return_404(client):
     assert response.json() == {'detail': 'User not found'}
 
 
-def test_update_user(client, user):
+def test_update_user(client, user, token):
     response = client.put(
         f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'teste2',
             'email': 'teste2@teste2.com',
@@ -80,33 +81,37 @@ def test_update_user(client, user):
     }
 
 
-def test_update_user_should_return_404(client):
-    response = client.put(
-        '/users/2',
-        json={
-            'id': 2,
-            'username': 'teste2',
-            'password': 'teste',
-            'email': 'teste2@teste2.com',
-        },
-    )
-
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
-
-
-def test_delete_user(client, user):
+def test_delete_user(client, user, token):
     response = client.delete(
-        f'/users/{user.id}',
+        f'/users/{user.id}', headers={'Authorization': f'Bearer {token}'}
     )
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'message': 'User deleted'}
 
 
-def test_delete_user_should_return_404(client):
-    response = client.delete(
-        '/users/2',
+def test_get_token(client, user):
+    response = client.post(
+        '/token',
+        data={
+            'username': user.email,
+            'password': user.clean_password,
+        },
+    )
+    token = response.json()
+
+    assert response.status_code == HTTPStatus.OK
+    assert token['token_type'] == 'Bearer'
+    assert token['access_token']
+
+
+def test_get_token_should_return_400(client, user):
+    response = client.post(
+        '/token',
+        data={
+            'username': user.email,
+            'password': user.clean_password + 'teste',
+        },
     )
 
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json() == {'detail': 'Incorrect email or password'}
